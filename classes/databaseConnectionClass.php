@@ -15,11 +15,22 @@ class DatabaseConnection {
         } catch(PDOException $e) {
             echo "Prisijungti nepavyko: ".$e->getMessage();
         }
-        // perkelti i kita faila veliau ir pasivogti konstrukta
-        for($i=1; $i<=5; $i++) {
-            $randomPrice = rand(1, 100);
-            $randomCategory = rand(1,3);
-            $this->insertAction("products", ["title", "description", "price", "category_id", "image_url"], ["'item"."$i'", "'item"."$i'", "'$randomPrice'", "'$randomCategory'", "'url"."$i'"]);
+    }
+
+    public function selectAction($table) {
+        try {
+            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $sql = "SELECT * FROM `$table`";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+
+            $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
+            $result = $stmt->fetchAll();
+
+            return $result;
+
+        } catch(PDOException $e) {
+            return "Nepavyko vykdyti uzklausos: " . $e->getMessage();
         }
     }
 
@@ -41,15 +52,23 @@ class DatabaseConnection {
 
     }
 
+    public function deleteAction($table, $id) {
+        try {
+            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $sql = "DELETE FROM `$table` WHERE id = $id";
+            $this->conn->exec($sql);
+            echo "Pavyko istrinti irasa";
+        }
+        catch(PDOException $e) {
+            echo "Nepavyko istrinti iraso: " . $e->getMessage();
+        }
+    }
+
 
     public function __destruct() {
         $this->conn=null;
         echo "Atsijungta sekmingai";
     }
 }
-
-
-
-$test = new DatabaseConnection;
 
 ?>
