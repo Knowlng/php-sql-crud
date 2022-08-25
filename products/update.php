@@ -15,9 +15,13 @@ $shopDatabase->editProduct();
 <body>
     <form method="POST">
         <input type="hidden" name="id" value="<?php echo $_GET['id']; ?>">
+        <label>Title</label>
         <input class="form-control" name="title" value="<?php echo $product[0]["title"]; ?>" placeholder="Title">
+        <label>Description</label>
         <input class="form-control" name="description" value="<?php echo $product[0]["description"]; ?>" placeholder="Description">
+        <label>Price</label>
         <input class="form-control" name="price" value="<?php echo $product[0]["price"]; ?>"  placeholder="Price">
+        <label>Category</label>
         <select class="form-select" name="category_id">
             <?php foreach($shopDatabase->getCategories() as $category) { ?>
                 <?php if($product[0]["category_id"] == $category["id"]) { ?>
@@ -27,8 +31,9 @@ $shopDatabase->editProduct();
                 <?php } ?>
             <?php } ?>
         </select>
+        <label>Image</label>
         <input class="form-control" name="image_url" value="<?php echo $product[0]["image_url"]; ?>"  placeholder="Image">
-        <button class="btn btn-primary" type="submit" name="edit">Update</button>
+        <button class="btn btn-primary mt-3" type="submit" name="edit">Update</button>
     </form>
 </body>
 </html>

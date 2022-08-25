@@ -72,7 +72,7 @@ class ShopDatabase extends DatabaseConnection{
             $products["category_id"] = '"' . $products["category_id"] . '"';
             $products["image_url"] = '"' . $products["image_url"] . '"';
             $this->insertAction("products", ["title", "description", "price", "category_id", "image_url"],[$products["title"], $products["description"], $products["price"], $products["category_id"], $products["image_url"]]);
-            // header("Location: index.php");
+            header("Location: index.php");
         }
     }
 
@@ -101,6 +101,19 @@ class ShopDatabase extends DatabaseConnection{
                 "image_url" => $_POST["image_url"]
             );
             $this->updateAction("products", $_POST["id"] , $products);
+            header("Location: index.php");
+        }
+    }
+
+    public function createCategory() {
+        if(isset($_POST["submitCategory"])) {
+            $categories = array(
+                "title" => $_POST["title"],
+                "description" => $_POST["description"]
+            );
+            $categories["title"] = '"' . $categories["title"] . '"';
+            $categories["description"] = '"' . $categories["description"] . '"';           
+            $this->insertAction("categories", ["title", "description"],[$categories["title"], $categories["description"]]);
             header("Location: index.php");
         }
     }

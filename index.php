@@ -15,7 +15,13 @@
                 <a class="nav-link" href="index.php">Main</a>
             </li>
             <li class="nav-item">
+                <a class="nav-link" href="index.php?page=categories">Categories</a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" href="index.php?page=create">Add product</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="index.php?page=createCategories">Add categories</a>
             </li>
         </ul>
         <?php 
@@ -26,7 +32,9 @@
                     include("products/update.php");
                 } else if(($_GET["page"]) == "categories") {
                     include("categories/index.php");
-                } 
+                } else if(($_GET["page"]) == "createCategories") {
+                    include("categories/create.php");
+                }
             } else {
                 include("products/index.php");
             }

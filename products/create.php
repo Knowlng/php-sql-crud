@@ -14,12 +14,21 @@ $shopDatabase->createProduct();
 </head>
 <body>
     <form method="POST">
-        <input class="form-control" name="title" placeholder="Title">
-        <input class="form-control" name="description" placeholder="Description">
-        <input class="form-control" name="price" placeholder="Price">
-        <input class="form-control" name="category_id" placeholder="Category">
-        <input class="form-control" name="image_url" placeholder="Image">
-        <button class="btn btn-primary" type="submit" name="submit">Add</button>
+        <label>Title</label>
+        <input class="form-control" name="title">
+        <label>Description</label>
+        <input class="form-control" name="description">
+        <label>Price</label>
+        <input class="form-control" name="price" value="0">
+        <label>Category</label>
+        <select class="form-select" name="category_id">
+        <?php foreach($shopDatabase->getCategories() as $category) { ?>
+                <option value="<?php echo $category['id']; ?>"><?php echo $category['title']; ?></option>
+            <?php } ?>
+        </select>
+        <label>Image</label>
+        <input class="form-control" name="image_url">
+        <button class="btn btn-primary mt-3" type="submit" name="submit">Add</button>
     </form>
 </body>
 </html>
