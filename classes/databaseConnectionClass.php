@@ -64,6 +64,63 @@ class DatabaseConnection {
         }
     }
 
+    public function updateAction($table, $id, $data) {
+        $cols = array_keys($data);
+        $values = array_values($data);
+
+        $dataString = [];
+        for ($i=0; $i<count($cols); $i++) {
+           $dataString[] = $cols[$i] . " = '" . $values[$i]. "'";
+        }
+        $dataString = implode(",", $dataString);
+
+        try {
+            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $sql = "UPDATE `$table` SET $dataString WHERE id = $id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            echo "Pavyko atnaujinti irasa";
+        } 
+        catch(PDOException $e) {
+            echo "Nepavyko atnaujinti iraso: " . $e->getMessage();
+        }
+    }
+
+    public function selectOneAction($table, $id) {
+        try {
+            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $sql = "SELECT * FROM `$table` WHERE id = $id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
+            $result = $stmt->fetchAll();
+            return $result;
+        } catch(PDOException $e) {
+            return "Nepavyko vykdyti uzklausos: " . $e->getMessage();
+        }
+    }
+
+    public function selectWithJoin($table1, $table2, $table1RelationCol, $table2RelationCol, $join, $cols, $sortCol, $sortDir, $filterCat) {
+        $cols = implode(",", $cols);
+        try {
+            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $sql = "SELECT $cols FROM $table1 
+            $join $table2
+            ON $table1.$table1RelationCol = $table2.$table2RelationCol
+            $filterCat
+            ORDER BY `$table1`.`$sortCol` $sortDir";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
+            $result = $stmt->fetchAll();
+            return $result;
+        }
+        catch(PDOException $e) {
+            return "Nepavyko vykdyti uzklausos: " . $e->getMessage();
+        }
+    }
+
+
 
     public function __destruct() {
         $this->conn=null;

@@ -17,9 +17,6 @@
             <li class="nav-item">
                 <a class="nav-link" href="index.php?page=create">Add product</a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="index.php?page=update">Update product</a>
-            </li>
         </ul>
         <?php 
             if(isset($_GET["page"])) {

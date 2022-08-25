@@ -10,7 +10,12 @@ class ShopDatabase extends DatabaseConnection{
     }
 
     public function getProducts($table) {
-        $this->products = $this->selectAction("$table");
+        if(isset($_POST["filter"])) {
+            $filterCat = $_POST["category_id"];
+            $this->products= $this->selectWithJoin("products", "categories","category_id", "id", "LEFT JOIN",["products.id", "products.title", "products.description", "products.price", "categories.title as category_id", "products.image_url"], "id", "ASC", "WHERE `categories`.`id` = $filterCat");
+        } else {
+            $this->products= $this->selectWithJoin("products", "categories","category_id", "id", "LEFT JOIN",["products.id", "products.title", "products.description", "products.price", "categories.title as category_id", "products.image_url"], "id", "ASC", " ");
+        }
         foreach ($this->products as $product) {
             echo "<tr>";
             echo "<td>".$product["id"]."</td>";
@@ -23,9 +28,23 @@ class ShopDatabase extends DatabaseConnection{
             echo "<form method='POST'>";
             echo "<input type='hidden' name='id' value='".$product["id"]."'>";
             echo "<button class='btn btn-danger' type='submit' name='delete'>DELETE</button>";
+            echo "<a href='index.php?page=update&id=".$product["id"]."' class='btn btn-success'>EDIT</a>";
             echo "</form>";
             echo "</tr>";
         }
+    }
+
+    public function getCategories() {
+        $this->categories = $this->selectAction("categories");
+        foreach ($this->categories as $category) {
+            echo "<tr>";
+            echo "<td>".$category["id"]."</td>";
+            echo "<td>".$category["title"]."</td>";
+            echo "<td>".$category["description"]."</td>";
+            echo "</tr>";
+
+        }
+        return $this->categories;
     }
 
     public function addRandomProducts($quantity) {
@@ -44,16 +63,16 @@ class ShopDatabase extends DatabaseConnection{
                 "title" => $_POST["title"],
                 "description" => $_POST["description"],
                 "price" => $_POST["price"],
-                "categoryID" => $_POST["categoryID"],
-                "imageURL" => $_POST["imageURL"]
+                "category_id" => $_POST["category_id"],
+                "image_url" => $_POST["image_url"]
             );
             $products["title"] = '"' . $products["title"] . '"';
             $products["description"] = '"' . $products["description"] . '"';
             $products["price"] = '"' . $products["price"] . '"';
-            $products["categoryID"] = '"' . $products["categoryID"] . '"';
-            $products["imageURL"] = '"' . $products["imageURL"] . '"';
-            $this->insertAction("products", ["title", "description", "price", "category_id", "image_url"],[$products["title"], $products["description"], $products["price"], $products["categoryID"], $products["imageURL"]]);
-            header("Location: index.php");
+            $products["category_id"] = '"' . $products["category_id"] . '"';
+            $products["image_url"] = '"' . $products["image_url"] . '"';
+            $this->insertAction("products", ["title", "description", "price", "category_id", "image_url"],[$products["title"], $products["description"], $products["price"], $products["category_id"], $products["image_url"]]);
+            // header("Location: index.php");
         }
     }
 
@@ -61,6 +80,28 @@ class ShopDatabase extends DatabaseConnection{
         if(isset($_POST["delete"])) {
             $this->deleteAction("products", $_POST["id"]);
             header("Location: index.php"); 
+        }
+    }
+
+    public function selectOneProduct() {
+        if(isset($_GET["page"]) && ($_GET["page"] == "update" && isset($_GET["id"]))) {
+            $product = $this->selectOneAction("products", $_GET["id"]);
+            return $product;
+            
+        }
+    }
+
+    public function editProduct() {
+        if(isset($_POST["edit"])) {
+            $products = array(
+                "title" => $_POST["title"],
+                "description" => $_POST["description"],
+                "price" => $_POST["price"],
+                "category_id" => $_POST["category_id"],
+                "image_url" => $_POST["image_url"]
+            );
+            $this->updateAction("products", $_POST["id"] , $products);
+            header("Location: index.php");
         }
     }
 }

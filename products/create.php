@@ -17,8 +17,8 @@ $shopDatabase->createProduct();
         <input class="form-control" name="title" placeholder="Title">
         <input class="form-control" name="description" placeholder="Description">
         <input class="form-control" name="price" placeholder="Price">
-        <input class="form-control" name="categoryID" placeholder="Category">
-        <input class="form-control" name="imageURL" placeholder="Image">
+        <input class="form-control" name="category_id" placeholder="Category">
+        <input class="form-control" name="image_url" placeholder="Image">
         <button class="btn btn-primary" type="submit" name="submit">Add</button>
     </form>
 </body>
