@@ -2,7 +2,6 @@
     include("classes/shopDatabaseClass.php"); 
     $products = new ShopDatabase();
     $products->deleteProduct();
-    $product=$products->selectOneProduct();
 ?>
 
 <!DOCTYPE html>
@@ -17,7 +16,8 @@
     <h1>Shop Main</h1>
     <form method="POST">
     <select class="form-select" name="category_id">
-    <option value="`categories`.`id`">All</option>
+    <option value=" ">All</option>
+    <option <?php if (isset($_POST["category_id"]) && $_POST["category_id"]=="none") echo "selected";?> value="none">No Category</option>
             <?php foreach($products->getCategories() as $category) { ?>
                 <option <?php if (isset($_POST["category_id"]) && $_POST["category_id"]==$category['id']) echo "selected";?> value="<?php echo $category['id']; ?>"><?php echo $category['title']; ?></option>
             <?php } ?>
@@ -30,10 +30,19 @@
             <th>Title</th>
             <th>Description</th>
             <th>Price</th>
-            <th>Category</th>
+            <th>Category 
+                <form method="POST" class="d-inline">
+                    <input type='hidden' name='ascending' value="ASC">
+                    <button class="btn btn-link btn-sm text-decoration-none" type="submit" name="ascendingSubmit">∧</button>
+                </form>
+                <form method="POST" class="d-inline">
+                    <input type='hidden' name='descending' value="DESC">
+                    <button class="btn btn-link btn-sm text-decoration-none" type="submit" name="descendingSubmit">∨</button>
+                </form>
+            </th>
             <th>Image</th>
             <th>Actions</th>
-            <?php $products->getProducts("products"); ?>
+            <?php $products->getProducts(); ?>
         </tr>
     </table>
 </body>

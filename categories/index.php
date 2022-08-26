@@ -1,8 +1,7 @@
 <?php 
     include("classes/shopDatabaseClass.php"); 
     $categories = new ShopDatabase();
-    // $products->deleteProduct();
-    // $product=$products->selectOneProduct();
+    $categories->deleteCategory();
 ?>
 
 <!DOCTYPE html>
@@ -17,10 +16,38 @@
     <h1>Categories Main</h1>
     <table class="table table-striped">
         <tr>
-            <th>ID</th>
-            <th>Title</th>
-            <th>Description</th>
-            <?php $categories->getCategories(); ?>
+            <th>ID
+            <form method="POST" class="d-inline">
+                    <input type='hidden' name='ascID' value="ASC">
+                    <button class="btn btn-link btn-sm text-decoration-none" type="submit" name="submitAscID">∧</button>
+                </form>
+                <form method="POST" class="d-inline">
+                    <input type='hidden' name='descID' value="DESC">
+                    <button class="btn btn-link btn-sm text-decoration-none" type="submit" name="submitDescID">∨</button>
+                </form>
+            </th>
+            <th>Title
+            <form method="POST" class="d-inline">
+                    <input type='hidden' name='ascTitle' value="ASC">
+                    <button class="btn btn-link btn-sm text-decoration-none" type="submit" name="submitAscTitle">∧</button>
+                </form>
+                <form method="POST" class="d-inline">
+                    <input type='hidden' name='descTitle' value="DESC">
+                    <button class="btn btn-link btn-sm text-decoration-none" type="submit" name="submitdescTitle">∨</button>
+                </form>
+            </th>
+            <th>Description
+            <form method="POST" class="d-inline">
+                    <input type='hidden' name='ascDesc' value="ASC">
+                    <button class="btn btn-link btn-sm text-decoration-none" type="submit" name="submitAscDesc">∧</button>
+                </form>
+                <form method="POST" class="d-inline">
+                    <input type='hidden' name='descDesc' value="DESC">
+                    <button class="btn btn-link btn-sm text-decoration-none" type="submit" name="submitDescDesc">∨</button>
+                </form>
+            </th>
+            <th>Actions</th>
+            <?php $categories->displayCategories("categories", "id", "ASC"); ?>
         </tr>
     </table>
 </body>

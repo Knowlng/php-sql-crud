@@ -9,20 +9,42 @@ class ShopDatabase extends DatabaseConnection{
         parent::__construct();
     }
 
-    public function getProducts($table) {
+    public function getProducts() {
         if(isset($_POST["filter"])) {
             $filterCat = $_POST["category_id"];
-            $this->products= $this->selectWithJoin("products", "categories","category_id", "id", "LEFT JOIN",["products.id", "products.title", "products.description", "products.price", "categories.title as category_id", "products.image_url"], "id", "ASC", "WHERE `categories`.`id` = $filterCat");
+            if($filterCat==" "){
+                $this->products= $this->selectWithJoin("products", "categories","category_id", "id", "LEFT JOIN",["products.id", "products.title", "products.description", "products.price", "categories.title as category_id", "products.image_url"],"ORDER BY `products`.`id` ASC", $filterCat);
+            } else {
+                $this->products= $this->selectWithJoin("products", "categories","category_id", "id", "LEFT JOIN",["products.id", "products.title", "products.description", "products.price", "categories.title as category_id", "products.image_url"],"ORDER BY `products`.`id` ASC", "WHERE `categories`.`id` = $filterCat");
+            }   
+            if($filterCat=="none") {
+                $this->products= $this->selectWithJoin("products", "categories","category_id", "id", "LEFT JOIN",["products.id", "products.title", "products.description", "products.price", "categories.title as category_id", "products.image_url"],"ORDER BY `products`.`id` ASC", "WHERE `categories`.`title` IS NULL");
+            }
         } else {
-            $this->products= $this->selectWithJoin("products", "categories","category_id", "id", "LEFT JOIN",["products.id", "products.title", "products.description", "products.price", "categories.title as category_id", "products.image_url"], "id", "ASC", " ");
+            $this->products= $this->selectWithJoin("products", "categories","category_id", "id", "LEFT JOIN",["products.id", "products.title", "products.description", "products.price", "categories.title as category_id", "products.image_url"],"ORDER BY `products`.`id` ASC", " ");
         }
+
+        if(isset($_POST["ascendingSubmit"])) {
+            $dir = $_POST["ascending"];
+            $this->products= $this->selectWithJoin("products", "categories","category_id", "id", "LEFT JOIN",["products.id", "products.title", "products.description", "products.price", "categories.title as category_id", "products.image_url"],"ORDER BY `categories`.`title` $dir", " ");
+        }
+
+        if(isset($_POST["descendingSubmit"])) {
+            $dir = $_POST["descending"];
+            $this->products= $this->selectWithJoin("products", "categories","category_id", "id", "LEFT JOIN",["products.id", "products.title", "products.description", "products.price", "categories.title as category_id", "products.image_url"],"ORDER BY `categories`.`title` $dir", " ");
+        }
+
         foreach ($this->products as $product) {
             echo "<tr>";
             echo "<td>".$product["id"]."</td>";
             echo "<td>".$product["title"]."</td>";
             echo "<td>".$product["description"]."</td>";
             echo "<td>".$product["price"]."</td>";
-            echo "<td>".$product["category_id"]."</td>";
+            if(empty($product["category_id"])) {
+                echo "<td>No category set</td>";
+            } else {
+                echo "<td>".$product["category_id"]."</td>";
+            }
             echo "<td>".$product["image_url"]."</td>";
             echo "<td>";
             echo "<form method='POST'>";
@@ -30,17 +52,61 @@ class ShopDatabase extends DatabaseConnection{
             echo "<button class='btn btn-danger' type='submit' name='delete'>DELETE</button>";
             echo "<a href='index.php?page=update&id=".$product["id"]."' class='btn btn-success'>EDIT</a>";
             echo "</form>";
+            echo "</td>";
             echo "</tr>";
         }
     }
 
     public function getCategories() {
-        $this->categories = $this->selectAction("categories");
+        $this->categories = $this->selectAction("categories","id","ASC");
+        return $this->categories;
+    }
+
+    public function displayCategories() {
+        $this->categories = $this->selectAction("categories","id","ASC");
+
+        if(isset($_POST["submitAscID"])) {
+            $dir = $_POST["ascID"];
+            $this->categories = $this->selectAction("categories","id", $dir);
+        }
+
+        if (isset($_POST["submitDescID"])) {
+            $dir = $_POST["descID"];
+            $this->categories = $this->selectAction("categories","id", $dir);
+        } 
+
+        if(isset($_POST["submitAscTitle"])) {
+            $dir = $_POST["ascTitle"];
+            $this->categories = $this->selectAction("categories","title", $dir);
+        }
+
+        if (isset($_POST["submitDescTitle"])) {
+            $dir = $_POST["descTitle"];
+            $this->categories = $this->selectAction("categories","title", $dir);
+        } 
+
+        if(isset($_POST["submitAscDesc"])) {
+            $dir = $_POST["ascDesc"];
+            $this->categories = $this->selectAction("categories","description", $dir);
+        }
+
+        if (isset($_POST["submitDescDesc"])) {
+            $dir = $_POST["descDesc"];
+            $this->categories = $this->selectAction("categories","description", $dir);
+        } 
+
         foreach ($this->categories as $category) {
             echo "<tr>";
             echo "<td>".$category["id"]."</td>";
             echo "<td>".$category["title"]."</td>";
             echo "<td>".$category["description"]."</td>";
+            echo "<td>";
+            echo "<form method='POST'>";
+            echo "<input type='hidden' name='id' value='".$category["id"]."'>";
+            echo "<button class='btn btn-danger' type='submit' name='deleteCategory'>DELETE</button>";
+            echo "<a href='index.php?page=updateCategories&id=".$category["id"]."' class='btn btn-success'>EDIT</a>";
+            echo "</form>";
+            echo "</td>";
             echo "</tr>";
 
         }
@@ -83,12 +149,21 @@ class ShopDatabase extends DatabaseConnection{
         }
     }
 
-    public function selectOneProduct() {
-        if(isset($_GET["page"]) && ($_GET["page"] == "update" && isset($_GET["id"]))) {
-            $product = $this->selectOneAction("products", $_GET["id"]);
-            return $product;
-            
+    public function deleteCategory() {
+        if(isset($_POST["deleteCategory"])) {
+            $this->deleteAction("categories", $_POST["id"]);
+            header("Location: index.php?page=categories"); 
         }
+    }
+
+    public function selectOneProduct() {
+        $product = $this->selectOneAction("products", $_GET["id"]);
+        return $product;
+    }
+
+    public function selectOneCategory() {
+        $category = $this->selectOneAction("categories", $_GET["id"]);
+        return $category;
     }
 
     public function editProduct() {
@@ -105,6 +180,17 @@ class ShopDatabase extends DatabaseConnection{
         }
     }
 
+    public function editCategory() {
+        if(isset($_POST["editCategory"])) {
+            $categories = array(
+                "title" => $_POST["title"],
+                "description" => $_POST["description"]
+            );
+            $this->updateAction("categories", $_POST["id"] , $categories);
+            header("Location: index.php?page=categories");
+        }
+    }
+
     public function createCategory() {
         if(isset($_POST["submitCategory"])) {
             $categories = array(
@@ -114,7 +200,7 @@ class ShopDatabase extends DatabaseConnection{
             $categories["title"] = '"' . $categories["title"] . '"';
             $categories["description"] = '"' . $categories["description"] . '"';           
             $this->insertAction("categories", ["title", "description"],[$categories["title"], $categories["description"]]);
-            header("Location: index.php");
+            header("Location: index.php?page=categories");
         }
     }
 }

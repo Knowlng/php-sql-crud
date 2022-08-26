@@ -34,6 +34,8 @@
                     include("categories/index.php");
                 } else if(($_GET["page"]) == "createCategories") {
                     include("categories/create.php");
+                } else if(($_GET["page"]) == "updateCategories") {
+                    include("categories/update.php");
                 }
             } else {
                 include("products/index.php");

@@ -17,10 +17,11 @@ class DatabaseConnection {
         }
     }
 
-    public function selectAction($table) {
+    public function selectAction($table, $col, $sortDir) {
         try {
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $sql = "SELECT * FROM `$table`";
+            $sql = "SELECT * FROM `$table`
+            ORDER BY `$table`.`$col` $sortDir";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
 
@@ -100,7 +101,7 @@ class DatabaseConnection {
         }
     }
 
-    public function selectWithJoin($table1, $table2, $table1RelationCol, $table2RelationCol, $join, $cols, $sortCol, $sortDir, $filterCat) {
+    public function selectWithJoin($table1, $table2, $table1RelationCol, $table2RelationCol, $join, $cols, $sort, $filterCat) {
         $cols = implode(",", $cols);
         try {
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -108,7 +109,7 @@ class DatabaseConnection {
             $join $table2
             ON $table1.$table1RelationCol = $table2.$table2RelationCol
             $filterCat
-            ORDER BY `$table1`.`$sortCol` $sortDir";
+            $sort";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
             $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
