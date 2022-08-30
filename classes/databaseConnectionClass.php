@@ -11,6 +11,7 @@ class DatabaseConnection {
     public function __construct() {
         try {
             $this->conn = new PDO("mysql:host=$this->host;dbname=$this->database", $this->user, $this->password);
+            $this->conn->exec("set names utf8");
             echo "Prisijungta prie duomenu bazes sekmingai";
         } catch(PDOException $e) {
             echo "Prisijungti nepavyko: ".$e->getMessage();
@@ -121,6 +122,20 @@ class DatabaseConnection {
         }
     }
 
+    public function checkIfImageExists($url){
+        try {
+            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $sql = "SELECT 1 FROM products WHERE image_url = '$url'";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
+            $result = $stmt->fetchAll();
+            return $result;
+        }
+        catch(PDOException $e) {
+            return "Nepavyko vykdyti uzklausos: " . $e->getMessage();
+        }
+    }
 
 
     public function __destruct() {

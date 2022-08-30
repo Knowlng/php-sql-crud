@@ -13,7 +13,7 @@ $shopDatabase->editProduct();
     <title>Edit Product</title>
 </head>
 <body>
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
         <input type="hidden" name="id" value="<?php echo $_GET['id']; ?>">
         <label>Title</label>
         <input class="form-control" name="title" value="<?php echo $product[0]["title"]; ?>" placeholder="Title">
@@ -32,7 +32,9 @@ $shopDatabase->editProduct();
             <?php } ?>
         </select>
         <label>Image</label>
-        <input class="form-control" name="image_url" value="<?php echo $product[0]["image_url"]; ?>"  placeholder="Image">
+        <input type="file" class="form-control" name="image_url">
+        <input type="hidden" name="keepImg" value="<?php echo $product[0]["image_url"]; ?>">
+        <?php if($product[0]["image_url"]=="images/default.jpg"){ echo " ";} else { echo "<p class='mt-2'>Current image:</p><div class='container mt-3'><img class='w-25' src=".$product[0]['image_url']."></div>";}?>
         <button class="btn btn-primary mt-3" type="submit" name="edit">Update</button>
     </form>
 </body>

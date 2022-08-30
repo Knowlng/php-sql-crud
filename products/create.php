@@ -13,7 +13,7 @@ $shopDatabase->createProduct();
     <title>Add Product</title>
 </head>
 <body>
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
         <label>Title</label>
         <input class="form-control" name="title">
         <label>Description</label>
@@ -27,7 +27,7 @@ $shopDatabase->createProduct();
             <?php } ?>
         </select>
         <label>Image</label>
-        <input class="form-control" name="image_url">
+        <input type="file" class="form-control" name="image_url">
         <button class="btn btn-primary mt-3" type="submit" name="submit">Add</button>
     </form>
 </body>

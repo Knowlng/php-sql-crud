@@ -30,15 +30,43 @@
             <th>Title</th>
             <th>Description</th>
             <th>Price</th>
-            <th>Category 
-                <form method="POST" class="d-inline">
-                    <input type='hidden' name='ascending' value="ASC">
-                    <button class="btn btn-link btn-sm text-decoration-none" type="submit" name="ascendingSubmit">∧</button>
-                </form>
-                <form method="POST" class="d-inline">
+            <th class="text-nowrap">Category
+                <form method="POST" class="d-inline
+                    <?php 
+
+                        if(isset($_POST["descendingSubmit"])) {
+                        $hidden = "d-none";
+                        echo $hidden;
+                        }
+
+                        if(isset($show)) {
+                            echo $show; 
+                        }
+
+                    ?>">
                     <input type='hidden' name='descending' value="DESC">
                     <button class="btn btn-link btn-sm text-decoration-none" type="submit" name="descendingSubmit">∨</button>
                 </form>
+                <?php 
+                    if(isset($_POST["descendingSubmit"])) {
+                ?>
+                <form method="POST" class="d-inline
+                <?php
+
+                if(isset($_POST["ascendingSubmit"])) {
+                    $show = "d-inline";
+                    $hidden = "d-none";
+                }
+
+                if(isset($show)) {
+                    echo $show; 
+                }
+            
+                ?>">
+                    <input type='hidden' name='ascending' value="ASC">
+                    <button class="btn btn-link btn-sm text-decoration-none" type="submit" name="ascendingSubmit">∧</button>
+                </form>
+                <?php } ?>
             </th>
             <th>Image</th>
             <th>Actions</th>

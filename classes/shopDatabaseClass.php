@@ -45,9 +45,14 @@ class ShopDatabase extends DatabaseConnection{
             } else {
                 echo "<td>".$product["category_id"]."</td>";
             }
-            echo "<td>".$product["image_url"]."</td>";
+            if(file_exists($product['image_url']) && $product['image_url'] != "images/") {
+                echo "<td><img class='mw-100' src=".$product["image_url"]."></td>";
+            } else {
+                echo "<td><img class='mw-100' src='images/default.jpg'></td>";
+            }
             echo "<td>";
             echo "<form method='POST'>";
+            echo "<input type='hidden' name='imageURL' value='".$product['image_url']."'>";
             echo "<input type='hidden' name='id' value='".$product["id"]."'>";
             echo "<button class='btn btn-danger' type='submit' name='delete'>DELETE</button>";
             echo "<a href='index.php?page=update&id=".$product["id"]."' class='btn btn-success'>EDIT</a>";
@@ -130,7 +135,7 @@ class ShopDatabase extends DatabaseConnection{
                 "description" => $_POST["description"],
                 "price" => $_POST["price"],
                 "category_id" => $_POST["category_id"],
-                "image_url" => $_POST["image_url"]
+                "image_url" => $this->uploadImage($_FILES["image_url"])
             );
             $products["title"] = '"' . $products["title"] . '"';
             $products["description"] = '"' . $products["description"] . '"';
@@ -142,8 +147,32 @@ class ShopDatabase extends DatabaseConnection{
         }
     }
 
+    private function uploadImage($file) {
+
+        $fileDir = "images/";
+        $fileTarget = $fileDir . basename($file["name"]);
+        $fileType = strtolower(pathinfo($fileTarget, PATHINFO_EXTENSION));
+
+        if($fileType != "jpg") {
+            return "images/default.jpg"; 
+        }
+
+        if($file["error"] == 0) {
+            if(move_uploaded_file($file["tmp_name"], $fileTarget)) {
+                return $fileTarget;
+            } else {
+                return "images/default.jpg";           
+            }
+        }
+        return $fileTarget;
+    }
+
     public function deleteProduct() {
         if(isset($_POST["delete"])) {
+            $imageArray =& $this->checkIfImageExists($_POST["imageURL"]);
+            if(count($imageArray) == 1 && $_POST["imageURL"] != "images/default.jpg") {
+                unlink($_POST["imageURL"]);
+            }
             $this->deleteAction("products", $_POST["id"]);
             header("Location: index.php"); 
         }
@@ -168,15 +197,27 @@ class ShopDatabase extends DatabaseConnection{
 
     public function editProduct() {
         if(isset($_POST["edit"])) {
-            $products = array(
-                "title" => $_POST["title"],
-                "description" => $_POST["description"],
-                "price" => $_POST["price"],
-                "category_id" => $_POST["category_id"],
-                "image_url" => $_POST["image_url"]
-            );
+            var_dump($_FILES["image_url"]);
+            echo ($_FILES["image_url"]['name']);
+            if($_FILES["image_url"]['tmp_name']=' ') {
+                $products = array(
+                    "title" => $_POST["title"],
+                    "description" => $_POST["description"],
+                    "price" => $_POST["price"],
+                    "category_id" => $_POST["category_id"],
+                    "image_url" => $_POST["keepImg"]
+                );
+            } else {
+                $products = array(
+                    "title" => $_POST["title"],
+                    "description" => $_POST["description"],
+                    "price" => $_POST["price"],
+                    "category_id" => $_POST["category_id"],
+                    "image_url" => $this->uploadImage($_FILES["image_url"])
+                );
+            }
             $this->updateAction("products", $_POST["id"] , $products);
-            header("Location: index.php");
+            // header("Location: index.php");
         }
     }
 
