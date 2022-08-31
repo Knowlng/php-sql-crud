@@ -2,6 +2,7 @@
     include("classes/shopDatabaseClass.php"); 
     $products = new ShopDatabase();
     $products->deleteProduct();
+    $products->addRandomProducts();
 ?>
 
 <!DOCTYPE html>
@@ -13,7 +14,14 @@
     <title>Shop</title>
 </head>
 <body>
-    <h1>Shop Main</h1>
+    <div class="d-flex justify-content-between">
+        <h1 class="d-inline">Shop Main</h1>
+        <form class="d-flex justify-content-end align-items-center" method="POST">
+            <label class="me-2">Create new random rows (max 150)</label>
+            <input class="form-control w-25 d-inline" name="quantity">
+            <button class="btn btn-primary d-inline ms-2" type="submit" name="createRandom">Create</button>
+        </form>
+    </div>
     <form method="POST">
     <select class="form-select" name="category_id">
     <option value=" ">All</option>
@@ -24,12 +32,12 @@
         </select>
         <button class="btn btn-primary mt-3 mb-3" type="submit" name="filter">Filter</button>
     </form>
-    <table class="table table-striped">
+    <table class="table table-striped align-middle">
         <tr>
             <th>ID</th>
             <th>Title</th>
             <th>Description</th>
-            <th>Price</th>
+            <th class="text-nowrap">Price (€)</th>
             <th class="text-nowrap">Category
                 <form method="POST" class="d-inline
                     <?php 

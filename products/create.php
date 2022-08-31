@@ -18,7 +18,7 @@ $shopDatabase->createProduct();
         <input class="form-control" name="title">
         <label>Description</label>
         <input class="form-control" name="description">
-        <label>Price</label>
+        <label>Price (€)</label>
         <input class="form-control" name="price" value="0">
         <label>Category</label>
         <select class="form-select" name="category_id">

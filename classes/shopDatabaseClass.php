@@ -118,14 +118,33 @@ class ShopDatabase extends DatabaseConnection{
         return $this->categories;
     }
 
-    public function addRandomProducts($quantity) {
+    public function addRandomProducts() {
+        if(isset($_POST["createRandom"])){
+            $quantity = $_POST["quantity"];
+            if(ctype_digit($quantity) && $quantity>0 && $quantity<=150) {
+                $catArray = $this->getCategories();
+                $idArray = [];
+                foreach($catArray as $id) {
+                    $idArray[] = $id["id"];
+                }
 
-        for($i=1; $i<=$quantity; $i++) {
-            $randomPrice = rand(1, 100);
-            $randomCategory = rand(1,3);
-            $this->insertAction("products", ["title", "description", "price", "category_id", "image_url"], ["'item"."$i'", "'item"."$i'", "'$randomPrice'", "'$randomCategory'", "'url"."$i'"]);
+                for($i=1; $i<=$quantity; $i++) {
+                    $randomPrice = rand(1, 100);
+                    $randomKey = array_rand($idArray);
+                    $randomCategory = $idArray[$randomKey];
+                    $randomImage = $this->getRandomImage();
+                    $this->insertAction("products", ["title", "description", "price", "category_id", "image_url"], ["'item"."$i'", "'item"."$i'", "'$randomPrice'", "'$randomCategory'", "'$randomImage'"]);
+                }
+                header("Location: index.php");
+            }
         }
+    }
 
+    protected function getRandomImage() {
+        $files = glob(realpath('images') . '/*.*');
+        $file = array_rand($files);
+        $result = substr($files[$file], strpos($files[$file], 'images'));
+        return $result;
     }
 
     public function createProduct() {
@@ -138,7 +157,7 @@ class ShopDatabase extends DatabaseConnection{
                 "image_url" => $this->uploadImage($_FILES["image_url"])
             );
             $products["title"] = '"' . $products["title"] . '"';
-            $products["description"] = '"' . $products["description"] . '"';
+            $products["description"] = '"' . $products["description"] . '"';    
             $products["price"] = '"' . $products["price"] . '"';
             $products["category_id"] = '"' . $products["category_id"] . '"';
             $products["image_url"] = '"' . $products["image_url"] . '"';
@@ -198,16 +217,9 @@ class ShopDatabase extends DatabaseConnection{
     public function editProduct() {
         if(isset($_POST["edit"])) {
             var_dump($_FILES["image_url"]);
+            echo $_POST["keepImg"];
             echo ($_FILES["image_url"]['name']);
-            if($_FILES["image_url"]['tmp_name']=' ') {
-                $products = array(
-                    "title" => $_POST["title"],
-                    "description" => $_POST["description"],
-                    "price" => $_POST["price"],
-                    "category_id" => $_POST["category_id"],
-                    "image_url" => $_POST["keepImg"]
-                );
-            } else {
+            if(strlen($_FILES["image_url"]['name'])!==0) {
                 $products = array(
                     "title" => $_POST["title"],
                     "description" => $_POST["description"],
@@ -215,9 +227,22 @@ class ShopDatabase extends DatabaseConnection{
                     "category_id" => $_POST["category_id"],
                     "image_url" => $this->uploadImage($_FILES["image_url"])
                 );
+                $imageArray =& $this->checkIfImageExists($_POST["keepImg"]);
+                if(count($imageArray) == 1 && $_POST["keepImg"] != "images/default.jpg") {
+                    unlink($_POST["keepImg"]);
+                }
+            } else {
+                $products = array(
+                    "title" => $_POST["title"],
+                    "description" => $_POST["description"],
+                    "price" => $_POST["price"],
+                    "category_id" => $_POST["category_id"],
+                    "image_url" => $_POST["keepImg"]
+
+                );
             }
             $this->updateAction("products", $_POST["id"] , $products);
-            // header("Location: index.php");
+            header("Location: index.php");
         }
     }
 
