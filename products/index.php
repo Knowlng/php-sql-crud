@@ -22,14 +22,20 @@
             <button class="btn btn-primary d-inline ms-2" type="submit" name="createRandom">Create</button>
         </form>
     </div>
-    <form method="POST">
-    <select class="form-select" name="category_id">
-    <option value=" ">All</option>
-    <option <?php if (isset($_POST["category_id"]) && $_POST["category_id"]=="none") echo "selected";?> value="none">No Category</option>
+    <form method="GET">
+        <select class="form-select mb-3" name="category_id">
+        <option value=" ">All</option>
+        <option <?php if (isset($_GET["category_id"]) && $_GET["category_id"]=="none") echo "selected";?> value="none">No Category</option>
             <?php foreach($products->getCategories() as $category) { ?>
-                <option <?php if (isset($_POST["category_id"]) && $_POST["category_id"]==$category['id']) echo "selected";?> value="<?php echo $category['id']; ?>"><?php echo $category['title']; ?></option>
+                <option <?php if (isset($_GET["category_id"]) && $_GET["category_id"]==$category['id']) echo "selected";?> value="<?php echo $category['id']; ?>"><?php echo $category['title']; ?></option>
             <?php } ?>
         </select>
+        <?php foreach($products->getSettings() as $setting) { ?>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="pageLimit" value="<?php echo $setting["value"];?>" id="<?php echo $setting["value"];?>" <?php if(isset($_GET["pageLimit"]) && $_GET["pageLimit"]==$setting["value"]) echo "checked";?>>
+            <label class="form-check-label" for="<?php echo $setting["id"];?>"><?php echo $setting["name"];?></label>
+        </div>
+        <?php } ?>
         <button class="btn btn-primary mt-3 mb-3" type="submit" name="filter">Filter</button>
     </form>
     <table class="table table-striped align-middle">
@@ -59,18 +65,18 @@
                     if(isset($_POST["descendingSubmit"])) {
                 ?>
                 <form method="POST" class="d-inline
-                <?php
+                    <?php
 
-                if(isset($_POST["ascendingSubmit"])) {
-                    $show = "d-inline";
-                    $hidden = "d-none";
-                }
+                    if(isset($_POST["ascendingSubmit"])) {
+                        $show = "d-inline";
+                        $hidden = "d-none";
+                    }
 
-                if(isset($show)) {
-                    echo $show; 
-                }
-            
-                ?>">
+                    if(isset($show)) {
+                        echo $show; 
+                    }
+                
+                    ?>">
                     <input type='hidden' name='ascending' value="ASC">
                     <button class="btn btn-link btn-sm text-decoration-none" type="submit" name="ascendingSubmit">∧</button>
                 </form>
@@ -79,6 +85,7 @@
             <th>Image</th>
             <th>Actions</th>
             <?php $products->getProducts(); ?>
+            <?php $products->getPagination("1");?>
         </tr>
     </table>
 </body>

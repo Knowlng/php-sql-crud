@@ -104,13 +104,32 @@ class DatabaseConnection {
 
     public function selectWithJoin($table1, $table2, $table1RelationCol, $table2RelationCol, $join, $cols, $sort, $filterCat) {
         $cols = implode(",", $cols);
+        $productsPerPage=$this->getPagination("0");
+
+        if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on'){
+            $url = "https://";   
+        } else  {
+            $url = "http://";
+            $url.= $_SERVER['HTTP_HOST'];    
+            $url.= $_SERVER['REQUEST_URI'];  
+        }
+
+        $offset = 0;
+
+        $string="paginatorPage=";
+        if(strpos($url, $string) !== false){ 
+            $currentPage = substr($url, strpos($url,"paginatorPage=")+14);
+            $offset = ($currentPage - 1) * $productsPerPage;
+        }
+
         try {
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $sql = "SELECT $cols FROM $table1 
             $join $table2
             ON $table1.$table1RelationCol = $table2.$table2RelationCol
             $filterCat
-            $sort";
+            $sort
+            LIMIT $offset, $productsPerPage";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
             $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
@@ -137,6 +156,23 @@ class DatabaseConnection {
         }
     }
 
+    public function totalCount($table1) {
+        try {
+            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $sql = "SELECT COUNT(*) AS totalCount FROM $table1";
+            // $join $table2
+            // ON $table1.$table1RelationCol = $table2.$table2RelationCol
+            // $filterCat";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
+            $result = $stmt->fetchAll();
+            return $result;
+        }
+        catch(PDOException $e) {
+            return "Nepavyko vykdyti uzklausos: " . $e->getMessage();
+        }
+    }
 
     public function __destruct() {
         $this->conn=null;

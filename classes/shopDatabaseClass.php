@@ -4,14 +4,15 @@ include("classes/databaseConnectionClass.php");
 class ShopDatabase extends DatabaseConnection{
     public $products;
     public $categories;
+    public $settings;
 
     public function __construct() {
         parent::__construct();
     }
 
     public function getProducts() {
-        if(isset($_POST["filter"])) {
-            $filterCat = $_POST["category_id"];
+        if(isset($_GET["filter"])) {
+            $filterCat = $_GET["category_id"];
             if($filterCat==" "){
                 $this->products= $this->selectWithJoin("products", "categories","category_id", "id", "LEFT JOIN",["products.id", "products.title", "products.description", "products.price", "categories.title as category_id", "products.image_url"],"ORDER BY `products`.`id` ASC", $filterCat);
             } else {
@@ -67,6 +68,11 @@ class ShopDatabase extends DatabaseConnection{
         return $this->categories;
     }
 
+    public function getSettings() {
+        $this->settings = $this->selectAction("settings","id","ASC");
+        return $this->settings;
+    }
+
     public function displayCategories() {
         $this->categories = $this->selectAction("categories","id","ASC");
 
@@ -116,6 +122,26 @@ class ShopDatabase extends DatabaseConnection{
 
         }
         return $this->categories;
+    }
+
+    public function displaySettings() {
+        $this->settings = $this->selectAction("settings","id","ASC");
+        foreach ($this->settings as $setting) {
+            echo "<tr>";
+            echo "<td>".$setting["id"]."</td>";
+            echo "<td>".$setting["value"]."</td>";
+            echo "<td>".$setting["name"]."</td>";
+            echo "<td>";
+            echo "<form method='POST'>";
+            echo "<input type='hidden' name='id' value='".$setting["id"]."'>";
+            echo "<button class='btn btn-danger' type='submit' name='deleteCategory'>DELETE</button>";
+            echo "<a href='index.php?page=updateCategories&id=".$setting["id"]."' class='btn btn-success'>EDIT</a>";
+            echo "</form>";
+            echo "</td>";
+            echo "</tr>";
+
+        }
+        return $this->settings;
     }
 
     public function addRandomProducts() {
@@ -268,6 +294,32 @@ class ShopDatabase extends DatabaseConnection{
             $this->insertAction("categories", ["title", "description"],[$categories["title"], $categories["description"]]);
             header("Location: index.php?page=categories");
         }
+    }
+
+    public function getPagination($show) {
+        $productsCount = floatval($this->totalCount("products")[0]["totalCount"]);
+        echo $productsCount;
+
+        $limit = $_GET["pageLimit"] ?? 15;
+        $filterCat = " ";
+        if(isset($_GET["category_id"])){
+            $filterCat = $_GET["category_id"];
+        }
+        $productsPerPage = $limit;
+        if ($productsPerPage == 0){
+            $productsPerPage = $productsCount;
+        }
+        $pagesCount = ceil($productsCount / $productsPerPage);
+        
+        if($show==1) {
+            if($limit!=0) {
+                for($i = 1; $i <= $pagesCount; $i++) {
+                    echo "<a class='btn btn-primary' href='index.php?category_id=$filterCat&pageLimit=$limit&filter=&paginatorPage=$i'>$i</a>";
+                }
+            }
+        }
+
+        return $productsPerPage;
     }
 }
 ?>

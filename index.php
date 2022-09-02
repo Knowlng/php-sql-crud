@@ -23,6 +23,9 @@
             <li class="nav-item">
                 <a class="nav-link" href="index.php?page=createCategories">Add categories</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="index.php?page=settings">Settings</a>
+            </li>
         </ul>
         <?php 
             if(isset($_GET["page"])) {
@@ -36,7 +39,9 @@
                     include("categories/create.php");
                 } else if(($_GET["page"]) == "updateCategories") {
                     include("categories/update.php");
-                }
+                }  else if(($_GET["page"]) == "settings") {
+                    include("settings/index.php");
+                } 
             } else {
                 include("products/index.php");
             }
