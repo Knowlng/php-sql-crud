@@ -1,7 +1,7 @@
 <?php 
     include("classes/shopDatabaseClass.php"); 
     $settings = new ShopDatabase();
-    // $settings->deleteCategory();
+    $settings->deleteSetting();
 ?>
 
 <!DOCTYPE html>
@@ -14,6 +14,9 @@
 </head>
 <body>
     <h1>Settings</h1>
+    <form class="GET">
+        <a href='index.php?page=createSetting' class='btn btn-primary mt-3 mb-3'>Create</a>
+    </form>
     <table class="table table-striped">
         <tr>
         <th class="text-nowrap">ID</th>

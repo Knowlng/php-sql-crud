@@ -41,6 +41,10 @@
                     include("categories/update.php");
                 }  else if(($_GET["page"]) == "settings") {
                     include("settings/index.php");
+                }  else if(($_GET["page"]) == "createSetting") {
+                    include("settings/create.php");
+                } else if(($_GET["page"]) == "updateSetting") {
+                    include("settings/update.php");
                 } 
             } else {
                 include("products/index.php");

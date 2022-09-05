@@ -12,7 +12,7 @@ class DatabaseConnection {
         try {
             $this->conn = new PDO("mysql:host=$this->host;dbname=$this->database", $this->user, $this->password);
             $this->conn->exec("set names utf8");
-            echo "Prisijungta prie duomenu bazes sekmingai";
+            // echo "Prisijungta prie duomenu bazes sekmingai";
         } catch(PDOException $e) {
             echo "Prisijungti nepavyko: ".$e->getMessage();
         }
@@ -104,24 +104,15 @@ class DatabaseConnection {
 
     public function selectWithJoin($table1, $table2, $table1RelationCol, $table2RelationCol, $join, $cols, $sort, $filterCat) {
         $cols = implode(",", $cols);
-        $productsPerPage=$this->getPagination("0");
-
-        if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on'){
-            $url = "https://";   
-        } else  {
-            $url = "http://";
-            $url.= $_SERVER['HTTP_HOST'];    
-            $url.= $_SERVER['REQUEST_URI'];  
-        }
+        $productsPerPage=$this->getPagination("0","0");
 
         $offset = 0;
 
-        $string="paginatorPage=";
-        if(strpos($url, $string) !== false){ 
-            $currentPage = substr($url, strpos($url,"paginatorPage=")+14);
+        $currentPage = $this->currentPage();
+
+        if($currentPage!=0){
             $offset = ($currentPage - 1) * $productsPerPage;
         }
-
         try {
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $sql = "SELECT $cols FROM $table1 
@@ -156,13 +147,13 @@ class DatabaseConnection {
         }
     }
 
-    public function totalCount($table1) {
+    public function totalCount($table1, $table2, $table1RelationCol, $table2RelationCol, $join, $filterCat) {
         try {
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $sql = "SELECT COUNT(*) AS totalCount FROM $table1";
-            // $join $table2
-            // ON $table1.$table1RelationCol = $table2.$table2RelationCol
-            // $filterCat";
+            $sql = "SELECT COUNT(*) AS totalCount FROM $table1
+            $join $table2
+            ON $table1.$table1RelationCol = $table2.$table2RelationCol
+            $filterCat";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
             $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
@@ -176,7 +167,7 @@ class DatabaseConnection {
 
     public function __destruct() {
         $this->conn=null;
-        echo "Atsijungta sekmingai";
+        // echo "Atsijungta sekmingai";
     }
 }
 

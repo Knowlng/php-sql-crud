@@ -25,6 +25,11 @@ class ShopDatabase extends DatabaseConnection{
             $this->products= $this->selectWithJoin("products", "categories","category_id", "id", "LEFT JOIN",["products.id", "products.title", "products.description", "products.price", "categories.title as category_id", "products.image_url"],"ORDER BY `products`.`id` ASC", " ");
         }
 
+        if(isset($_GET["search"]) && $_GET["searchInput"]!="") {
+            $search = $_GET["searchInput"];
+            $this->products= $this->selectWithJoin("products", "categories","category_id", "id", "LEFT JOIN",["products.id", "products.title", "products.description", "products.price", "categories.title as category_id", "products.image_url"],"", "WHERE `products`.`title` LIKE '$search%'");
+        }
+
         if(isset($_POST["ascendingSubmit"])) {
             $dir = $_POST["ascending"];
             $this->products= $this->selectWithJoin("products", "categories","category_id", "id", "LEFT JOIN",["products.id", "products.title", "products.description", "products.price", "categories.title as category_id", "products.image_url"],"ORDER BY `categories`.`title` $dir", " ");
@@ -38,8 +43,8 @@ class ShopDatabase extends DatabaseConnection{
         foreach ($this->products as $product) {
             echo "<tr>";
             echo "<td>".$product["id"]."</td>";
-            echo "<td>".$product["title"]."</td>";
-            echo "<td>".$product["description"]."</td>";
+            echo "<td style='width:120px;'>".$product["title"]."</td>";
+            echo "<td style='width:620px;'>".$product["description"]."</td>";
             echo "<td>".$product["price"]."</td>";
             if(empty($product["category_id"])) {
                 echo "<td>No category set</td>";
@@ -47,12 +52,12 @@ class ShopDatabase extends DatabaseConnection{
                 echo "<td>".$product["category_id"]."</td>";
             }
             if(file_exists($product['image_url']) && $product['image_url'] != "images/") {
-                echo "<td><img class='mw-100' src=".$product["image_url"]."></td>";
+                echo "<td class='text-center' style='width:300px;'><img class='mw-100' src=".$product["image_url"]."></td>";
             } else {
-                echo "<td><img class='mw-100' src='images/default.jpg'></td>";
+                echo "<td class='text-center' style='width:300px;'><img class='mw-100' src='images/default.jpg'></td>";
             }
             echo "<td>";
-            echo "<form method='POST'>";
+            echo "<form method='POST' class='text-center'>";
             echo "<input type='hidden' name='imageURL' value='".$product['image_url']."'>";
             echo "<input type='hidden' name='id' value='".$product["id"]."'>";
             echo "<button class='btn btn-danger' type='submit' name='delete'>DELETE</button>";
@@ -124,6 +129,12 @@ class ShopDatabase extends DatabaseConnection{
         return $this->categories;
     }
 
+    public function deleteSetting() {
+        if(isset($_POST["deleteSetting"])) {
+            $this->deleteAction("settings", $_POST["settingID"]);
+        }
+    }
+
     public function displaySettings() {
         $this->settings = $this->selectAction("settings","id","ASC");
         foreach ($this->settings as $setting) {
@@ -133,15 +144,39 @@ class ShopDatabase extends DatabaseConnection{
             echo "<td>".$setting["name"]."</td>";
             echo "<td>";
             echo "<form method='POST'>";
-            echo "<input type='hidden' name='id' value='".$setting["id"]."'>";
-            echo "<button class='btn btn-danger' type='submit' name='deleteCategory'>DELETE</button>";
-            echo "<a href='index.php?page=updateCategories&id=".$setting["id"]."' class='btn btn-success'>EDIT</a>";
+            echo "<input type='hidden' name='settingID' value='".$setting["id"]."'>";
+            echo "<button class='btn btn-danger' type='submit' name='deleteSetting'>DELETE</button>";
+            echo "<a href='index.php?page=updateSetting&id=".$setting["id"]."' class='btn btn-success'>EDIT</a>";
             echo "</form>";
             echo "</td>";
             echo "</tr>";
 
         }
         return $this->settings;
+    }
+
+    public function createSetting(){
+        if(isset($_POST["submitSetting"])) {
+            $settings = array(
+                "value" => $_POST["value"],
+                "name" => $_POST["name"]
+            );
+            $settings["value"] = '"' . $settings["value"] . '"';
+            $settings["name"] = '"' . $settings["name"] . '"';           
+            $this->insertAction("settings", ["value", "name"],[$settings["value"], $settings["name"]]);
+            header("Location: index.php?page=settings");
+        }
+    }   
+
+    public function editSetting() {
+        if(isset($_POST["editSetting"])) {
+            $settings = array(
+                "value" => $_POST["value"],
+                "name" => $_POST["name"]
+            );
+            $this->updateAction("settings", $_POST["id"] , $settings);
+            header("Location: index.php?page=settings");
+        }
     }
 
     public function addRandomProducts() {
@@ -240,11 +275,13 @@ class ShopDatabase extends DatabaseConnection{
         return $category;
     }
 
+    public function selectOneSetting() {
+        $setting = $this->selectOneAction("settings", $_GET["id"]);
+        return $setting;
+    }
+
     public function editProduct() {
         if(isset($_POST["edit"])) {
-            var_dump($_FILES["image_url"]);
-            echo $_POST["keepImg"];
-            echo ($_FILES["image_url"]['name']);
             if(strlen($_FILES["image_url"]['name'])!==0) {
                 $products = array(
                     "title" => $_POST["title"],
@@ -296,30 +333,77 @@ class ShopDatabase extends DatabaseConnection{
         }
     }
 
-    public function getPagination($show) {
-        $productsCount = floatval($this->totalCount("products")[0]["totalCount"]);
-        echo $productsCount;
-
-        $limit = $_GET["pageLimit"] ?? 15;
+    public function getPagination($showPagination, $showCount) {
         $filterCat = " ";
+        $search = " ";
+        $limit = $_GET["pageLimit"] ?? 15;
+
+        if(isset($_GET["search"]) && $_GET["searchInput"]!=""){
+            $limit = 0;
+        }
+
         if(isset($_GET["category_id"])){
             $filterCat = $_GET["category_id"];
         }
+
+        $productsCount = floatval($this->totalCount("products", "categories","category_id", "id", "LEFT JOIN", "WHERE `categories`.`id` = '$filterCat'")[0]["totalCount"]);
+        if($filterCat==" "){
+            $productsCount = floatval($this->totalCount("products", "categories","category_id", "id", "LEFT JOIN", $filterCat)[0]["totalCount"]);
+        } else if($filterCat=="none"){
+            $productsCount = floatval($this->totalCount("products", "categories","category_id", "id", "LEFT JOIN", "WHERE `categories`.`id` IS NULL")[0]["totalCount"]);
+        }
+
         $productsPerPage = $limit;
         if ($productsPerPage == 0){
             $productsPerPage = $productsCount;
+            $showPagination=0;
         }
-        $pagesCount = ceil($productsCount / $productsPerPage);
         
-        if($show==1) {
-            if($limit!=0) {
-                for($i = 1; $i <= $pagesCount; $i++) {
-                    echo "<a class='btn btn-primary' href='index.php?category_id=$filterCat&pageLimit=$limit&filter=&paginatorPage=$i'>$i</a>";
+        if ($productsPerPage==0 && $productsCount==0 || $productsCount <= $productsPerPage) {
+            $showPagination=0;
+        }
+        if($showCount==1){
+            echo "<p class='text-center'>Amount of products: ".$productsCount."</p>";
+        }
+
+        if($showPagination==1) {
+            $currentPage=$this->currentPage();
+            $pagesCount = ceil($productsCount / $productsPerPage);
+            $buttonArray = [];
+            echo "<div class='text-center mb-3'>";
+            for($i = 1; $i <= $pagesCount; $i++) {
+                if($currentPage==$i || $currentPage==0 && $i<=1){
+                    $buttonArray [] = "<a class='btn btn-danger' href='index.php?category_id=$filterCat&pageLimit=$limit&filter=&paginatorPage=$i'>$i</a>";
+                } else {
+                    $buttonArray [] = "<a class='btn btn-link text-decoration-none' href='index.php?category_id=$filterCat&pageLimit=$limit&filter=&paginatorPage=$i'>$i</a>";
                 }
             }
+            foreach($buttonArray as $page) {
+                echo $page;
+            }            
+            echo "</div>";
         }
 
         return $productsPerPage;
+    }
+
+    public function currentPage(){
+
+        if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on'){
+            $url = "https://";   
+        } else  {
+            $url = "http://";
+            $url.= $_SERVER['HTTP_HOST'];    
+            $url.= $_SERVER['REQUEST_URI'];  
+        }
+
+        $currentPage = 0;
+        $string="paginatorPage=";
+        if(strpos($url, $string) !== false){ 
+            $currentPage = substr($url, strpos($url,"paginatorPage=")+14);
+        }
+
+        return $currentPage;
     }
 }
 ?>
